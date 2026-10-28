@@ -1,0 +1,1 @@
+export default function Loading(){return <main className="loading-state" aria-live="polite">Finding the good stuff…</main>;}

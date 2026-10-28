@@ -1,0 +1,3 @@
+import type { StoreProductDTO } from "@/contracts/storefront";
+import { ProductCard } from "./product-card";
+export function ProductGrid({products}:{products:StoreProductDTO[]}){if(!products.length)return <p className="empty-note">Nothing on the rails just yet. Check back soon.</p>;return <div className="product-grid">{products.map((product)=><ProductCard key={product.id} product={product}/>)}</div>;}

@@ -1,0 +1,3 @@
+export type ProductVariant = { id: string; title: string; available: boolean; price: string; currency: string; options: { name: string; value: string }[] };
+export type StoreProduct = { id: string; handle: string; title: string; description: string; condition: string; images: string[]; price: string; currency: string; available: boolean; variants: ProductVariant[]; collectionHandles: string[] };
+export type StoreCollection = { handle: string; title: string; description: string; image: string; productCount: number };

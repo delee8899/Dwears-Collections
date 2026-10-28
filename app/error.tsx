@@ -1,0 +1,2 @@
+"use client";
+export default function ErrorPage({reset}:{error:Error&{digest?:string};reset:()=>void}){return <main className="not-found"><div className="eyebrow">We hit a snag</div><h1>The rails are a little tangled.</h1><p>Please try again in a moment.</p><button className="button" onClick={()=>reset()}>Try again <span>→</span></button></main>;}

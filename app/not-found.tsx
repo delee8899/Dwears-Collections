@@ -1,0 +1,2 @@
+import Link from "next/link";
+export default function NotFound(){return <main className="not-found"><div className="eyebrow">A little plot twist</div><h1>That find is gone.</h1><p>It may have found its next home. There are more good things waiting.</p><Link className="button" href="/shop">Browse the shop <span>→</span></Link></main>;}

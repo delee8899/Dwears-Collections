@@ -1,0 +1,4 @@
+import Link from "next/link";
+import type { CollectionDTO, StoreProductDTO } from "@/contracts/storefront";
+import { ProductGrid } from "./product-grid";
+export function CatalogPage({title="Fresh from the rails",description="One-off vintage and pre-loved finds, selected for their next chapter.",products,collections=[]}:{title?:string;description?:string;products:StoreProductDTO[];collections?:CollectionDTO[]}){return <main className="catalog-page"><div className="page-intro"><div className="eyebrow">Dwears Collections</div><h1>{title}</h1><p>{description}</p></div>{collections.length>0&&<nav className="collection-pills" aria-label="Shop by category">{collections.map((item)=><Link key={item.handle} href={`/collections/${item.handle}`}>{item.title}</Link>)}</nav>}<ProductGrid products={products}/></main>;}

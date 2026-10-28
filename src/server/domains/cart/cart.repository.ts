@@ -1,0 +1,2 @@
+import type { Cart, CartMutation } from "./cart.types";
+export interface CartRepository { getCart(cartId: string | null): Promise<Cart>; mutateCart(cartId: string | null, mutation: CartMutation): Promise<Cart>; getCheckoutUrl(cartId: string | null): Promise<string | null> }

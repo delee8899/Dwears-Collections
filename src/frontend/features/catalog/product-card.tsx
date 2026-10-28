@@ -1,0 +1,5 @@
+import Image from "next/image";
+import Link from "next/link";
+import type { StoreProductDTO } from "@/contracts/storefront";
+import { formatMoney } from "../../shared/format-money";
+export function ProductCard({product}:{product:StoreProductDTO}){return <article className="product-card"><Link href={`/products/${product.handle}`} className="product-photo" aria-label={`View ${product.title}`}><span className="badge">{product.available?"One of a kind":"Sold"}</span>{product.images[0]?<Image src={product.images[0]} alt={product.title} fill sizes="(max-width: 650px) 46vw, (max-width: 1000px) 28vw, 22vw"/>:<div className="image-placeholder"/>}</Link><div className="product-info"><div className="product-meta"><Link href={`/products/${product.handle}`}><h3>{product.title}</h3></Link><span className="price">{formatMoney(product.price,product.currency)}</span></div><div className="condition">{product.condition}</div></div></article>;}
