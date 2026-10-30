@@ -22,4 +22,3 @@ export async function writeCartId(cartId: string | null) {
     priority: "high",
   });
 }
-

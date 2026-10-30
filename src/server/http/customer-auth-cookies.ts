@@ -24,8 +24,16 @@ export async function readRefreshToken() {
 }
 export async function writeCustomerAuthCookies(tokens: CustomerSessionTokens) {
   const cookieStore = await cookies();
-  cookieStore.set(ACCESS_COOKIE, tokens.accessToken, options(ACCESS_MAX_AGE_SECONDS));
-  cookieStore.set(REFRESH_COOKIE, tokens.refreshToken, options(REFRESH_MAX_AGE_SECONDS));
+  cookieStore.set(
+    ACCESS_COOKIE,
+    tokens.accessToken,
+    options(ACCESS_MAX_AGE_SECONDS),
+  );
+  cookieStore.set(
+    REFRESH_COOKIE,
+    tokens.refreshToken,
+    options(REFRESH_MAX_AGE_SECONDS),
+  );
 }
 export async function clearCustomerAuthCookies() {
   const cookieStore = await cookies();

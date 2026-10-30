@@ -5,7 +5,11 @@ export type RefreshRotation =
   | { status: "invalid" | "reused" };
 
 export class CustomerAuthError extends Error {
-  constructor(message: string, readonly status: 400 | 401 | 409 | 503, readonly code: string) {
+  constructor(
+    message: string,
+    readonly status: 400 | 401 | 409 | 503,
+    readonly code: string,
+  ) {
     super(message);
     this.name = "CustomerAuthError";
   }

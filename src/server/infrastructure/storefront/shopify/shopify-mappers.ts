@@ -1,14 +1,111 @@
 import type { Cart, CartLine } from "../../../domains/cart/cart.types";
-import type { StoreCollection, StoreProduct } from "../../../domains/catalog/catalog.types";
-type Money={amount:string;currencyCode:string};
-type RawVariant={id:string;title:string;availableForSale:boolean;price:Money;selectedOptions:{name:string;value:string}[]};
-type RawProduct={id:string;handle:string;title:string;description:string;productType?:string;availableForSale:boolean;featuredImage?:{url:string}|null;images:{nodes:{url:string}[]};priceRange:{minVariantPrice:Money};variants:{nodes:RawVariant[]};collections?:{nodes:{handle:string}[]};metafield?:{value:string}|null};
-export function mapProduct(raw:RawProduct):StoreProduct {
- const variants=raw.variants.nodes.map((variant)=>({id:variant.id,title:variant.title,available:variant.availableForSale,price:variant.price.amount,currency:variant.price.currencyCode,options:variant.selectedOptions}));
+import type {
+  StoreCollection,
+  StoreProduct,
+} from "../../../domains/catalog/catalog.types";
+type Money = { amount: string; currencyCode: string };
+type RawVariant = {
+  id: string;
+  title: string;
+  availableForSale: boolean;
+  price: Money;
+  selectedOptions: { name: string; value: string }[];
+};
+type RawProduct = {
+  id: string;
+  handle: string;
+  title: string;
+  description: string;
+  productType?: string;
+  availableForSale: boolean;
+  featuredImage?: { url: string } | null;
+  images: { nodes: { url: string }[] };
+  priceRange: { minVariantPrice: Money };
+  variants: { nodes: RawVariant[] };
+  collections?: { nodes: { handle: string }[] };
+  metafield?: { value: string } | null;
+};
+export function mapProduct(raw: RawProduct): StoreProduct {
+  const variants = raw.variants.nodes.map((variant) => ({
+    id: variant.id,
+    title: variant.title,
+    available: variant.availableForSale,
+    price: variant.price.amount,
+    currency: variant.price.currencyCode,
+    options: variant.selectedOptions,
+  }));
 
- return {id:raw.id,handle:raw.handle,title:raw.title,description:raw.description,condition:raw.metafield?.value || "Pre-loved · Condition reviewed",images:raw.images.nodes.map((image)=>image.url).filter(Boolean).length?raw.images.nodes.map((image)=>image.url).filter(Boolean):raw.featuredImage?.url?[raw.featuredImage.url]:[],price:raw.priceRange.minVariantPrice.amount,currency:raw.priceRange.minVariantPrice.currencyCode,available:raw.availableForSale && variants.some((variant)=>variant.available),variants,collectionHandles:raw.collections?.nodes.map((collection)=>collection.handle) ?? []};
+  return {
+    id: raw.id,
+    handle: raw.handle,
+    title: raw.title,
+    description: raw.description,
+    condition: raw.metafield?.value || "Pre-loved · Condition reviewed",
+    images: raw.images.nodes.map((image) => image.url).filter(Boolean).length
+      ? raw.images.nodes.map((image) => image.url).filter(Boolean)
+      : raw.featuredImage?.url
+        ? [raw.featuredImage.url]
+        : [],
+    price: raw.priceRange.minVariantPrice.amount,
+    currency: raw.priceRange.minVariantPrice.currencyCode,
+    available:
+      raw.availableForSale && variants.some((variant) => variant.available),
+    variants,
+    collectionHandles:
+      raw.collections?.nodes.map((collection) => collection.handle) ?? [],
+  };
 }
-export type RawCollection={handle:string;title:string;description:string;image?:{url:string}|null;products:{nodes:RawProduct[]}};
-export function mapCollection(raw:RawCollection):StoreCollection {return {handle:raw.handle,title:raw.title,description:raw.description,image:raw.image?.url ?? "",productCount:raw.products.nodes.length};}
-type RawCart={id:string;lines:{nodes:{id:string;quantity:number;merchandise:{id:string;title:string;availableForSale:boolean;price:Money;image?:{url:string}|null;product:{title:string}}}[]};cost:{subtotalAmount:Money}};
-export function mapCart(raw:RawCart):Cart {const lines:CartLine[]=raw.lines.nodes.map((line)=>({id:line.id,variantId:line.merchandise.id,title:line.merchandise.product.title,variantTitle:line.merchandise.title,image:line.merchandise.image?.url ?? "",price:line.merchandise.price.amount,currency:line.merchandise.price.currencyCode,quantity:line.quantity,available:line.merchandise.availableForSale}));return {id:raw.id,lines,subtotal:raw.cost.subtotalAmount.amount,currency:raw.cost.subtotalAmount.currencyCode,itemCount:lines.reduce((sum,line)=>sum+line.quantity,0)};}
+export type RawCollection = {
+  handle: string;
+  title: string;
+  description: string;
+  image?: { url: string } | null;
+  products: { nodes: RawProduct[] };
+};
+export function mapCollection(raw: RawCollection): StoreCollection {
+  return {
+    handle: raw.handle,
+    title: raw.title,
+    description: raw.description,
+    image: raw.image?.url ?? "",
+    productCount: raw.products.nodes.length,
+  };
+}
+type RawCart = {
+  id: string;
+  lines: {
+    nodes: {
+      id: string;
+      quantity: number;
+      merchandise: {
+        id: string;
+        title: string;
+        availableForSale: boolean;
+        price: Money;
+        image?: { url: string } | null;
+        product: { title: string };
+      };
+    }[];
+  };
+  cost: { subtotalAmount: Money };
+};
+export function mapCart(raw: RawCart): Cart {
+  const lines: CartLine[] = raw.lines.nodes.map((line) => ({
+    id: line.id,
+    variantId: line.merchandise.id,
+    title: line.merchandise.product.title,
+    variantTitle: line.merchandise.title,
+    image: line.merchandise.image?.url ?? "",
+    price: line.merchandise.price.amount,
+    currency: line.merchandise.price.currencyCode,
+    quantity: line.quantity,
+    available: line.merchandise.availableForSale,
+  }));
+  return {
+    id: raw.id,
+    lines,
+    subtotal: raw.cost.subtotalAmount.amount,
+    currency: raw.cost.subtotalAmount.currencyCode,
+    itemCount: lines.reduce((sum, line) => sum + line.quantity, 0),
+  };
+}

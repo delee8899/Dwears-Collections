@@ -21,16 +21,32 @@ function repositories() {
   if (cached) return cached;
   const config = getStoreConfig();
   if (config.mode === "demo") {
-    cached = { catalog: demoCatalogRepository, cart: createDemoCartRepository() };
+    cached = {
+      catalog: demoCatalogRepository,
+      cart: createDemoCartRepository(),
+    };
     return cached;
   }
-  const client = new ShopifyClient(config.domain, config.apiVersion, config.token);
-  cached = { catalog: createShopifyCatalogRepository(client), cart: createShopifyCartRepository(client) };
+  const client = new ShopifyClient(
+    config.domain,
+    config.apiVersion,
+    config.token,
+  );
+  cached = {
+    catalog: createShopifyCatalogRepository(client),
+    cart: createShopifyCartRepository(client),
+  };
   return cached;
 }
-export function catalogService() { return createCatalogService(repositories().catalog); }
-export function catalogController() { return createCatalogController(catalogService()); }
-export function cartService() { return createCartService(repositories().cart); }
+export function catalogService() {
+  return createCatalogService(repositories().catalog);
+}
+export function catalogController() {
+  return createCatalogController(catalogService());
+}
+export function cartService() {
+  return createCartService(repositories().cart);
+}
 export function cartController() {
   const config = getStoreConfig();
   return createCartController({
@@ -40,18 +56,31 @@ export function cartController() {
     reportError: (operation, error) => console.error(operation, error),
   });
 }
-export function isDemoStore() { return getStoreConfig().mode === "demo"; }
+export function isDemoStore() {
+  return getStoreConfig().mode === "demo";
+}
 
 let authService: ReturnType<typeof createCustomerAuthService> | undefined;
 export function customerAuthService() {
   if (authService) return authService;
   const config = getCustomerAuthConfig();
-  if (!config.enabled || !config.accessTokenSecret || !config.refreshTokenSecret) {
-    throw new CustomerAuthError("Customer accounts are not available yet.", 503, "AUTH_UNAVAILABLE");
+  if (
+    !config.enabled ||
+    !config.accessTokenSecret ||
+    !config.refreshTokenSecret
+  ) {
+    throw new CustomerAuthError(
+      "Customer accounts are not available yet.",
+      503,
+      "AUTH_UNAVAILABLE",
+    );
   }
-  authService = createCustomerAuthService(createPostgresCustomerAuthRepository(customerAuthPool()), {
-    accessTokenSecret: config.accessTokenSecret,
-    refreshTokenSecret: config.refreshTokenSecret,
-  });
+  authService = createCustomerAuthService(
+    createPostgresCustomerAuthRepository(customerAuthPool()),
+    {
+      accessTokenSecret: config.accessTokenSecret,
+      refreshTokenSecret: config.refreshTokenSecret,
+    },
+  );
   return authService;
 }

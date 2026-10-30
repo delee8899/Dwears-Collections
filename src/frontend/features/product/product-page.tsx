@@ -4,4 +4,74 @@ import { useState } from "react";
 import type { StoreProductDTO } from "@/contracts/storefront";
 import { formatMoney } from "../../shared/format-money";
 import { AddToCartButton } from "./add-to-cart-button";
-export function ProductPage({product}:{product:StoreProductDTO}){const [selected,setSelected]=useState(product.variants.find((item)=>item.available)?.id??product.variants[0]?.id);const variant=product.variants.find((item)=>item.id===selected)??product.variants[0];const image=product.images[0];return <main className="product-page"><div className="product-gallery">{image?<Image src={image} alt={product.title} fill priority sizes="(max-width: 700px) 100vw, 55vw"/>:<div className="image-placeholder"/>}</div><section className="product-detail"><div className="eyebrow">One of a kind</div><h1>{product.title}</h1><div className="detail-price">{formatMoney(variant?.price??product.price,variant?.currency??product.currency)}</div><p className="detail-condition">{product.condition}</p><p className="detail-description">{product.description}</p>{product.variants.length>1&&<label className="variant-label">Choose an option<select value={selected} onChange={(event)=>setSelected(event.target.value)}>{product.variants.map((item)=><option key={item.id} value={item.id} disabled={!item.available}>{item.options.map((option)=>option.value).join(" / ")||item.title}{!item.available?" — Sold out":""}</option>)}</select></label>}{product.variants.length===1&&<p className="variant-single">{variant?.options.map((option)=>`${option.name}: ${option.value}`).join(" · ")||variant?.title}</p>}<AddToCartButton variant={variant}/><p className="shipping-note">Packed with care · Shipping calculated at checkout</p></section></main>;}
+export function ProductPage({ product }: { product: StoreProductDTO }) {
+  const [selected, setSelected] = useState(
+    product.variants.find((item) => item.available)?.id ??
+      product.variants[0]?.id,
+  );
+  const variant =
+    product.variants.find((item) => item.id === selected) ??
+    product.variants[0];
+  const image = product.images[0];
+  return (
+    <main className="product-page">
+      <div className="product-gallery">
+        {image ? (
+          <Image
+            src={image}
+            alt={product.title}
+            fill
+            priority
+            sizes="(max-width: 700px) 100vw, 55vw"
+          />
+        ) : (
+          <div className="image-placeholder" />
+        )}
+      </div>
+      <section className="product-detail">
+        <div className="eyebrow">One of a kind</div>
+        <h1>{product.title}</h1>
+        <div className="detail-price">
+          {formatMoney(
+            variant?.price ?? product.price,
+            variant?.currency ?? product.currency,
+          )}
+        </div>
+        <p className="detail-condition">{product.condition}</p>
+        <p className="detail-description">{product.description}</p>
+        {product.variants.length > 1 && (
+          <label className="variant-label">
+            Choose an option
+            <select
+              value={selected}
+              onChange={(event) => setSelected(event.target.value)}
+            >
+              {product.variants.map((item) => (
+                <option
+                  key={item.id}
+                  value={item.id}
+                  disabled={!item.available}
+                >
+                  {item.options.map((option) => option.value).join(" / ") ||
+                    item.title}
+                  {!item.available ? " — Sold out" : ""}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        {product.variants.length === 1 && (
+          <p className="variant-single">
+            {variant?.options
+              .map((option) => `${option.name}: ${option.value}`)
+              .join(" · ") || variant?.title}
+          </p>
+        )}
+        <AddToCartButton variant={variant} />
+        <p className="shipping-note">
+          Packed with care · Shipping calculated at checkout
+        </p>
+      </section>
+    </main>
+  );
+}

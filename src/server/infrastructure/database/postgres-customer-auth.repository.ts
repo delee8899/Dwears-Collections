@@ -1,7 +1,10 @@
 import "server-only";
 import type { Pool, PoolClient } from "pg";
 import type { CustomerAuthRepository } from "../../domains/customer-auth/customer-auth.repository";
-import type { CustomerAccount, RefreshRotation } from "../../domains/customer-auth/customer-auth.types";
+import type {
+  CustomerAccount,
+  RefreshRotation,
+} from "../../domains/customer-auth/customer-auth.types";
 
 type CustomerRow = { id: string; email: string; created_at: Date };
 type CredentialRow = CustomerRow & { password_hash: string };
@@ -15,12 +18,22 @@ type RotationRow = {
   session_expires_at: Date;
   session_revoked_at: Date | null;
 };
-const mapCustomer = (row: CustomerRow): CustomerAccount => ({ id: row.id, email: row.email, createdAt: row.created_at });
+const mapCustomer = (row: CustomerRow): CustomerAccount => ({
+  id: row.id,
+  email: row.email,
+  createdAt: row.created_at,
+});
 async function rollback(client: PoolClient) {
-  try { await client.query("ROLLBACK"); } catch { /* Keep the original storage error. */ }
+  try {
+    await client.query("ROLLBACK");
+  } catch {
+    /* Keep the original storage error. */
+  }
 }
 
-export function createPostgresCustomerAuthRepository(pool: Pool): CustomerAuthRepository {
+export function createPostgresCustomerAuthRepository(
+  pool: Pool,
+): CustomerAuthRepository {
   return {
     async createCustomer(email, passwordHash) {
       const result = await pool.query<CustomerRow>(
@@ -35,7 +48,14 @@ export function createPostgresCustomerAuthRepository(pool: Pool): CustomerAuthRe
         [email],
       );
       const row = result.rows[0];
-      return row ? { id: row.id, email: row.email, createdAt: row.created_at, passwordHash: row.password_hash } : null;
+      return row
+        ? {
+            id: row.id,
+            email: row.email,
+            createdAt: row.created_at,
+            passwordHash: row.password_hash,
+          }
+        : null;
     },
     async findCustomerById(id) {
       const result = await pool.query<CustomerRow>(
@@ -60,16 +80,30 @@ export function createPostgresCustomerAuthRepository(pool: Pool): CustomerAuthRe
       const client = await pool.connect();
       try {
         await client.query("BEGIN");
-        await client.query("DELETE FROM customer_auth_sessions WHERE expires_at <= NOW() OR revoked_at IS NOT NULL");
-        await client.query("INSERT INTO customer_auth_sessions (id, customer_id, expires_at) VALUES ($1, $2, $3)", [sessionId, customerId, expiresAt]);
-        await client.query("INSERT INTO customer_refresh_tokens (token_hash, session_id, expires_at) VALUES ($1, $2, $3)", [refreshTokenHash, sessionId, expiresAt]);
+        await client.query(
+          "DELETE FROM customer_auth_sessions WHERE expires_at <= NOW() OR revoked_at IS NOT NULL",
+        );
+        await client.query(
+          "INSERT INTO customer_auth_sessions (id, customer_id, expires_at) VALUES ($1, $2, $3)",
+          [sessionId, customerId, expiresAt],
+        );
+        await client.query(
+          "INSERT INTO customer_refresh_tokens (token_hash, session_id, expires_at) VALUES ($1, $2, $3)",
+          [refreshTokenHash, sessionId, expiresAt],
+        );
         await client.query("COMMIT");
       } catch (error) {
         await rollback(client);
         throw error;
-      } finally { client.release(); }
+      } finally {
+        client.release();
+      }
     },
-    async rotateRefreshToken(currentTokenHash, nextTokenHash, nextExpiresAt): Promise<RefreshRotation> {
+    async rotateRefreshToken(
+      currentTokenHash,
+      nextTokenHash,
+      nextExpiresAt,
+    ): Promise<RefreshRotation> {
       const client = await pool.connect();
       try {
         await client.query("BEGIN");
@@ -90,27 +124,49 @@ export function createPostgresCustomerAuthRepository(pool: Pool): CustomerAuthRe
           return { status: "invalid" };
         }
         if (row.token_consumed_at) {
-          await client.query("UPDATE customer_auth_sessions SET revoked_at = COALESCE(revoked_at, NOW()) WHERE id = $1", [row.session_id]);
+          await client.query(
+            "UPDATE customer_auth_sessions SET revoked_at = COALESCE(revoked_at, NOW()) WHERE id = $1",
+            [row.session_id],
+          );
           await client.query("COMMIT");
           return { status: "reused" };
         }
-        if (row.session_revoked_at || row.session_expires_at <= new Date() || row.token_expires_at <= new Date()) {
+        if (
+          row.session_revoked_at ||
+          row.session_expires_at <= new Date() ||
+          row.token_expires_at <= new Date()
+        ) {
           await client.query("COMMIT");
           return { status: "invalid" };
         }
-        await client.query("UPDATE customer_refresh_tokens SET consumed_at = NOW() WHERE token_hash = $1", [currentTokenHash]);
-        await client.query("INSERT INTO customer_refresh_tokens (token_hash, session_id, expires_at) VALUES ($1, $2, $3)", [nextTokenHash, row.session_id, nextExpiresAt]);
-        await client.query("UPDATE customer_auth_sessions SET last_used_at = NOW() WHERE id = $1", [row.session_id]);
+        await client.query(
+          "UPDATE customer_refresh_tokens SET consumed_at = NOW() WHERE token_hash = $1",
+          [currentTokenHash],
+        );
+        await client.query(
+          "INSERT INTO customer_refresh_tokens (token_hash, session_id, expires_at) VALUES ($1, $2, $3)",
+          [nextTokenHash, row.session_id, nextExpiresAt],
+        );
+        await client.query(
+          "UPDATE customer_auth_sessions SET last_used_at = NOW() WHERE id = $1",
+          [row.session_id],
+        );
         await client.query("COMMIT");
         return {
           status: "rotated",
           sessionId: row.session_id,
-          customer: { id: row.customer_id, email: row.email, createdAt: row.created_at },
+          customer: {
+            id: row.customer_id,
+            email: row.email,
+            createdAt: row.created_at,
+          },
         };
       } catch (error) {
         await rollback(client);
         throw error;
-      } finally { client.release(); }
+      } finally {
+        client.release();
+      }
     },
     async revokeRefreshToken(tokenHash) {
       const client = await pool.connect();
@@ -121,12 +177,18 @@ export function createPostgresCustomerAuthRepository(pool: Pool): CustomerAuthRe
           [tokenHash],
         );
         const sessionId = result.rows[0]?.session_id;
-        if (sessionId) await client.query("UPDATE customer_auth_sessions SET revoked_at = COALESCE(revoked_at, NOW()) WHERE id = $1", [sessionId]);
+        if (sessionId)
+          await client.query(
+            "UPDATE customer_auth_sessions SET revoked_at = COALESCE(revoked_at, NOW()) WHERE id = $1",
+            [sessionId],
+          );
         await client.query("COMMIT");
       } catch (error) {
         await rollback(client);
         throw error;
-      } finally { client.release(); }
+      } finally {
+        client.release();
+      }
     },
   };
 }

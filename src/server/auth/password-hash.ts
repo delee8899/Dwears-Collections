@@ -9,10 +9,16 @@ const DUMMY_SALT = Buffer.from("dwears-account-dummy-salt-v1", "utf8");
 
 function derive(password: string, salt: Buffer) {
   return new Promise<Buffer>((resolve, reject) => {
-    scrypt(password, salt, KEY_LENGTH, { N: SCRYPT_N, r: SCRYPT_R, p: SCRYPT_P, maxmem: MAX_MEMORY }, (error, key) => {
-      if (error) reject(error);
-      else resolve(key as Buffer);
-    });
+    scrypt(
+      password,
+      salt,
+      KEY_LENGTH,
+      { N: SCRYPT_N, r: SCRYPT_R, p: SCRYPT_P, maxmem: MAX_MEMORY },
+      (error, key) => {
+        if (error) reject(error);
+        else resolve(key as Buffer);
+      },
+    );
   });
 }
 export async function hashPassword(password: string) {
@@ -26,13 +32,24 @@ export async function burnPasswordVerification(password: string) {
 }
 export async function verifyPassword(password: string, encoded: string) {
   const [algorithm, n, r, p, saltValue, hashValue, extra] = encoded.split("$");
-  if (algorithm !== "scrypt" || n !== String(SCRYPT_N) || r !== String(SCRYPT_R) || p !== String(SCRYPT_P) || !saltValue || !hashValue || extra !== undefined) return false;
+  if (
+    algorithm !== "scrypt" ||
+    n !== String(SCRYPT_N) ||
+    r !== String(SCRYPT_R) ||
+    p !== String(SCRYPT_P) ||
+    !saltValue ||
+    !hashValue ||
+    extra !== undefined
+  )
+    return false;
   let salt: Buffer;
   let expected: Buffer;
   try {
     salt = Buffer.from(saltValue, "base64url");
     expected = Buffer.from(hashValue, "base64url");
-  } catch { return false; }
+  } catch {
+    return false;
+  }
   if (salt.length !== 16 || expected.length !== KEY_LENGTH) return false;
   const actual = await derive(password, salt);
   return timingSafeEqual(actual, expected);
