@@ -8,13 +8,13 @@ const securityHeaders: { key: string; value: string }[] = [
 if (process.env.NODE_ENV === "production") {
   securityHeaders.push({
     key: "Content-Security-Policy",
-    value: "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data: blob:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'",
+    value: "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data: blob: https://res.cloudinary.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'",
   });
 }
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   experimental: { cpus: 1 },
-  images: { remotePatterns: [{ protocol: "https", hostname: "cdn.shopify.com" }, { protocol: "https", hostname: "images.unsplash.com" }] },
+  images: { remotePatterns: [{ protocol: "https", hostname: "cdn.shopify.com" }, { protocol: "https", hostname: "images.unsplash.com" }, { protocol: "https", hostname: "res.cloudinary.com" }] },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

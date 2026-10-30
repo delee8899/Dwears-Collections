@@ -39,3 +39,9 @@ See `docs-architecture.md` for separation-of-concerns rules. Run `npm test` for 
 ## Social links
 
 Optionally set `NEXT_PUBLIC_TIKTOK_URL` and `NEXT_PUBLIC_INSTAGRAM_URL` to the official Dwears profile URLs. Unconfigured profiles are omitted.
+
+## Categories and images
+
+Shopify product collections are the category source of truth in live store mode. Assign products to Shopify collections such as Clothing, Jackets, Bags, and Accessories; the storefront shows those categories on /collections, on the homepage, and as dedicated /collections/<handle> pages. The demo catalog includes sample categories to illustrate the structure.
+
+Brand photography can be delivered through Cloudinary by setting NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME and uploading images in the Cloudinary Media Library. Set NEXT_PUBLIC_CLOUDINARY_HERO_PUBLIC_ID and NEXT_PUBLIC_CLOUDINARY_STORY_PUBLIC_ID to the public IDs (without extensions) to replace the homepage placeholders. Add Cloudinary public IDs for more editorial images through the shared cloudinaryImage helper. Product inventory photos stay attached to Shopify products in live mode so catalog imagery and checkout inventory stay aligned. Never expose Cloudinary API secrets in NEXT_PUBLIC_* variables. Customer self-service uploads are not enabled; a future upload screen must be restricted to a verified staff/admin role and use server-signed Cloudinary upload parameters.
